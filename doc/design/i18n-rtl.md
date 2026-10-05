@@ -52,10 +52,12 @@ CREATE TYPE public.locale AS ENUM ('en', 'ar');
 ALTER TABLE public.settings
   ADD COLUMN default_locale  public.locale   NOT NULL DEFAULT 'en',
   ADD COLUMN enabled_locales public.locale[] NOT NULL DEFAULT '{en}',
-  ADD CONSTRAINT settings_enabled_locales_not_empty
-    CHECK (cardinality(enabled_locales) > 0),
+  -- Also rules out an empty list: default_locale is NOT NULL and must be in it.
   ADD CONSTRAINT settings_default_locale_enabled
-    CHECK (default_locale = ANY (enabled_locales));
+    CHECK (default_locale = ANY (enabled_locales)),
+  -- No NULL or duplicate entries (helper is IMMUTABLE, so usable in a CHECK).
+  ADD CONSTRAINT settings_enabled_locales_is_set
+    CHECK (public.locale_array_is_set(enabled_locales));
 
 ALTER TABLE auth."user" ADD COLUMN locale public.locale NULL;
 ```
@@ -82,10 +84,19 @@ ALTER TABLE auth."user" ADD COLUMN locale public.locale NULL;
 - `auth.auth_response` gains `locale public.locale` and
   `enabled_locales public.locale[]`. Every auth path fills them, including the
   unauthenticated response, which carries the instance default.
-- `public.user_locale_set(locale public.locale)`, `SECURITY DEFINER`, updates
-  only the caller's own row. It raises if the language is not enabled, and NULL
-  resets the user to "follow default". Regular users cannot update `auth.user`
-  today, so this narrow door is required.
+- `public.user_locale_set(p_locale public.locale)`, `SECURITY INVOKER`, updates
+  only the caller's own row, and NULL resets the user to "follow default".
+  - **INVOKER is deliberate (VERIFIED):** `authenticated` already holds `UPDATE`
+    on `auth.user` under the `update_own_user` RLS policy, so RLS enforces the
+    own-row rule, as it does for `public.user_delete`. A DEFINER function would
+    bypass it.
+  - **The enabled-language rule lives in a trigger,** `BEFORE INSERT OR UPDATE OF
+    locale ON auth.user`. Admin edits and any future door therefore obey it too,
+    not just this function.
+- **Anonymous `auth_status` (RECONSTRUCTED):** the explicit grant to `anon` was
+  removed, but `public.auth_status` was never revoked from `PUBLIC`. The server
+  calls it without an `Authorization` header, so it runs as `anon` and works.
+  PR 1's test pins this.
 
 ### Per request in the app
 
@@ -137,7 +148,7 @@ operator to change); language-prefixed URLs `/ar/...` (see 3.4).
   ("English", "العربية"). It lives in the navbar user menu, on the login page and
   on the profile page.
 - It renders nothing when only one language is enabled.
-- **On change:** an authenticated user triggers `rpc('user_locale_set')`, then
+- **On change:** an authenticated user triggers `rpc('user_locale_set', { p_locale })`, then
   the cookie update, then `router.refresh()`. An anonymous visitor triggers the
   cookie update, then `router.refresh()`.
 - **Admin:** the existing settings / getting-started screen gains controls for
