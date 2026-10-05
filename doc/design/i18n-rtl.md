@@ -1,7 +1,8 @@
 # Internationalisation and right-to-left layout (Arabic first)
 
-**Status:** proposed design, for review by the StatBus team before any code lands.
-No implementation exists yet.
+**Status:** proposed design, for review by the StatBus team. PR 1 (the database
+language model, section 2) is implemented in this series; the app wiring, RTL
+layout, E2E harness and translations (PR 2 onwards) are not yet built.
 
 **Goal:** let StatBus web-app users switch between languages, with full
 right-to-left (RTL) layout for Arabic. The Yemen installation defaults to Arabic.
