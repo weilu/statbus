@@ -5,14 +5,18 @@ BEGIN;
 CREATE TYPE public.locale AS ENUM ('en', 'ar');
 
 -- CHECK constraints may only call IMMUTABLE functions; this one makes
--- "a set of languages" (no NULLs, no duplicates) checkable.
+-- "a set of languages" (flat, no NULLs, no duplicates) checkable. The
+-- dimension check matters because unnest flattens '{{en,ar}}', which would
+-- otherwise pass and reach the API as a nested JSON array.
 CREATE FUNCTION public.locale_array_is_set(p_locales public.locale[])
 RETURNS boolean
 LANGUAGE sql
 IMMUTABLE
 SET search_path = public, pg_temp
 AS $locale_array_is_set$
-  SELECT count(l) = cardinality(p_locales) AND count(l) = count(DISTINCT l)
+  SELECT COALESCE(array_ndims(p_locales), 1) = 1
+     AND count(l) = cardinality(p_locales)
+     AND count(l) = count(DISTINCT l)
     FROM unnest(p_locales) AS l;
 $locale_array_is_set$;
 

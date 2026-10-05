@@ -81,6 +81,12 @@ SAVEPOINT c4;
 UPDATE public.settings SET enabled_locales = ARRAY['en', NULL]::public.locale[];
 \set ON_ERROR_STOP on
 ROLLBACK TO SAVEPOINT c4;
+\echo --- multidimensional list (unnest would flatten it past the other checks)
+SAVEPOINT c5;
+\set ON_ERROR_STOP off
+UPDATE public.settings SET enabled_locales = '{{en,ar}}';
+\set ON_ERROR_STOP on
+ROLLBACK TO SAVEPOINT c5;
 \echo --- the Yemen configuration is accepted
 UPDATE public.settings SET enabled_locales = '{ar,en}', default_locale = 'ar';
 SELECT default_locale, enabled_locales FROM public.settings;

@@ -123,6 +123,14 @@ UPDATE public.settings SET enabled_locales = ARRAY['en', NULL]::public.locale[];
 ERROR:  new row for relation "settings" violates check constraint "settings_enabled_locales_is_set"
 \set ON_ERROR_STOP on
 ROLLBACK TO SAVEPOINT c4;
+\echo --- multidimensional list (unnest would flatten it past the other checks)
+--- multidimensional list (unnest would flatten it past the other checks)
+SAVEPOINT c5;
+\set ON_ERROR_STOP off
+UPDATE public.settings SET enabled_locales = '{{en,ar}}';
+ERROR:  new row for relation "settings" violates check constraint "settings_enabled_locales_is_set"
+\set ON_ERROR_STOP on
+ROLLBACK TO SAVEPOINT c5;
 \echo --- the Yemen configuration is accepted
 --- the Yemen configuration is accepted
 UPDATE public.settings SET enabled_locales = '{ar,en}', default_locale = 'ar';
