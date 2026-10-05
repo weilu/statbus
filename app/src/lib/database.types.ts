@@ -3331,6 +3331,8 @@ export type Database = {
         Row: {
           activity_category_standard_id: number
           country_id: number
+          default_locale: Database["public"]["Enums"]["locale"]
+          enabled_locales: Database["public"]["Enums"]["locale"][]
           id: number
           only_one_setting: boolean | null
           partition_count_target: number
@@ -3340,6 +3342,8 @@ export type Database = {
         Insert: {
           activity_category_standard_id: number
           country_id: number
+          default_locale?: Database["public"]["Enums"]["locale"]
+          enabled_locales?: Database["public"]["Enums"]["locale"][]
           id?: never
           only_one_setting?: boolean | null
           partition_count_target?: number
@@ -3349,6 +3353,8 @@ export type Database = {
         Update: {
           activity_category_standard_id?: number
           country_id?: number
+          default_locale?: Database["public"]["Enums"]["locale"]
+          enabled_locales?: Database["public"]["Enums"]["locale"][]
           id?: never
           only_one_setting?: boolean | null
           partition_count_target?: number
@@ -14632,6 +14638,12 @@ export type Database = {
         Args: Record<string, never>
         Returns: unknown[]
       },
+      locale_array_is_set: {
+        Args: {
+          p_locales?: Database["public"]["Enums"]["locale"][]
+        }
+        Returns: boolean
+      },
       location_hierarchy: {
         Args: {
           parent_establishment_id?: number
@@ -15752,6 +15764,12 @@ export type Database = {
         }
         Returns: Record<string, unknown>[]
       },
+      user_locale_set: {
+        Args: {
+          p_locale?: Database["public"]["Enums"]["locale"]
+        }
+        Returns: Database["public"]["Enums"]["locale"]
+      },
       user_restore: {
         Args: {
           p_user_id?: number
@@ -15858,6 +15876,7 @@ export type Database = {
           | "insert_or_update"
           | "update_only",
       import_valid_time_from: "job_provided" | "source_columns",
+      locale: "en" | "ar",
       location_type: "physical" | "postal",
       person_sex: "Male" | "Female",
       power_group_root_status: "single" | "cycle" | "multi",
@@ -16201,6 +16220,7 @@ export const Constants = {
         "update_only"
       ],
       import_valid_time_from: ["job_provided", "source_columns"],
+      locale: ["en", "ar"],
       location_type: ["physical", "postal"],
       person_sex: ["Male", "Female"],
       power_group_root_status: ["single", "cycle", "multi"],

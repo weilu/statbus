@@ -1,4 +1,6 @@
-```sql
+-- Down Migration 20261005172445: i18n locale model
+BEGIN;
+
 CREATE OR REPLACE FUNCTION auth.build_auth_response(p_user_record auth."user" DEFAULT NULL::auth."user", p_expired_access_token_call_refresh boolean DEFAULT false, p_error_code auth.login_error_code DEFAULT NULL::auth.login_error_code, p_token_expires_at timestamp with time zone DEFAULT NULL::timestamp with time zone)
  RETURNS auth.auth_response
  LANGUAGE plpgsql
@@ -33,11 +35,27 @@ BEGIN
     result.expired_access_token_call_refresh := p_expired_access_token_call_refresh;
     result.token_expires_at := p_token_expires_at;
   END IF;
-  -- Resolved for anonymous responses too: the login page renders in the
-  -- instance default before anyone signs in.
-  result.locale := auth.effective_locale(p_user_record);
-  result.enabled_locales := auth.enabled_locales();
   RETURN result;
 END;
-$function$
-```
+$function$;
+
+ALTER TYPE auth.auth_response
+  DROP ATTRIBUTE enabled_locales,
+  DROP ATTRIBUTE locale;
+
+DROP FUNCTION public.user_locale_set(public.locale);
+DROP TRIGGER user_locale_enabled_check ON auth."user";
+DROP FUNCTION auth.user_locale_enabled_check();
+DROP FUNCTION auth.effective_locale(auth."user");
+DROP FUNCTION auth.default_locale();
+DROP FUNCTION auth.enabled_locales();
+ALTER TABLE auth."user" DROP COLUMN locale;
+ALTER TABLE public.settings
+  DROP CONSTRAINT settings_enabled_locales_is_set,
+  DROP CONSTRAINT settings_default_locale_enabled,
+  DROP COLUMN enabled_locales,
+  DROP COLUMN default_locale;
+DROP FUNCTION public.locale_array_is_set(public.locale[]);
+DROP TYPE public.locale;
+
+END;

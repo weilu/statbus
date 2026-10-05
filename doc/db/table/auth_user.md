@@ -14,6 +14,7 @@
  last_sign_in_at    | timestamp with time zone |           |          |                              | plain    |             |              | 
  email_confirmed_at | timestamp with time zone |           |          |                              | plain    |             |              | 
  deleted_at         | timestamp with time zone |           |          |                              | plain    |             |              | 
+ locale             | locale                   |           |          |                              | plain    |             |              | 
 Indexes:
     "user_pkey" PRIMARY KEY, btree (id)
     "user_display_name_key" UNIQUE CONSTRAINT, btree (display_name)
@@ -70,6 +71,7 @@ Triggers:
     prevent_removal_of_last_admin_trigger BEFORE DELETE OR UPDATE ON auth."user" FOR EACH ROW EXECUTE FUNCTION auth.prevent_removal_of_last_admin()
     prevent_self_soft_delete_trigger BEFORE UPDATE ON auth."user" FOR EACH ROW EXECUTE FUNCTION auth.prevent_self_soft_delete()
     sync_user_credentials_and_roles_trigger BEFORE INSERT OR UPDATE ON auth."user" FOR EACH ROW EXECUTE FUNCTION auth.sync_user_credentials_and_roles()
+    user_locale_enabled_check BEFORE INSERT OR UPDATE OF locale ON auth."user" FOR EACH ROW EXECUTE FUNCTION auth.user_locale_enabled_check()
 Access method: heap
 
 ```

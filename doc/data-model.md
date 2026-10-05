@@ -144,6 +144,7 @@ Enumerated types used across the schema, with their possible values.
 - **`public.import_step_phase`**: `analyse`, `process`
 - **`public.import_strategy`**: `insert_or_replace`, `insert_only`, `replace_only`, `insert_or_update`, `update_only`
 - **`public.import_valid_time_from`**: `job_provided`, `source_columns`
+- **`public.locale`**: `en`, `ar`
 - **`public.location_type`**: `physical`, `postal`
 - **`public.person_sex`**: `Male`, `Female`
 - **`public.power_group_root_status`**: `single`, `cycle`, `multi`
@@ -249,8 +250,8 @@ Handles background processing. A long-running worker process calls `worker.proce
 
 ## Auth & System Tables/Views
 
-- `user(id, sub, display_name, email, email_confirmed_at, created_at, updated_at, last_sign_in_at, deleted_at, password, encrypted_password, statbus_role)` — **infrastructure**
-  - Enums: `statbus_role` (`public.statbus_role`).
+- `user(id, sub, display_name, email, email_confirmed_at, created_at, updated_at, last_sign_in_at, deleted_at, password, encrypted_password, statbus_role, locale)` — **infrastructure**
+  - Enums: `locale` (`public.locale`), `statbus_role` (`public.statbus_role`).
 - `user(id, sub, display_name, email, email_confirmed_at, created_at, updated_at, last_sign_in_at, deleted_at, password, statbus_role)`
   - Enums: `statbus_role` (`public.statbus_role`).
 - `api_key(id, user_id, created_at, expires_at, revoked_at, jti, description, token)` — **infrastructure**
@@ -259,8 +260,9 @@ Handles background processing. A long-running worker process calls `worker.proce
 - `refresh_session(id, user_id, created_at, last_used_at, expires_at, jti, refresh_version, user_agent, ip_address)` — **infrastructure**
   - Key FKs: user_id.
 - `secrets(value, created_at, updated_at, key, description)` — **infrastructure**
-- `settings(id, activity_category_standard_id, country_id, region_version_id, only_one_setting, required_to_be_enabled, partition_count_target)` — **infrastructure**
+- `settings(id, activity_category_standard_id, country_id, region_version_id, only_one_setting, required_to_be_enabled, partition_count_target, default_locale, enabled_locales)` — **infrastructure**
   - Key FKs: activity_category_standard_id, activity_category_standard_id, country_id, region_version_id, region_version_id, required_to_be_enabled, required_to_be_enabled.
+  - Enums: `default_locale` (`public.locale`).
 - `region_access(id, user_id, region_id)` — **infrastructure**
   - Key FKs: region_id, user_id.
 - `activity_category_access(id, user_id, activity_category_id)` — **infrastructure**

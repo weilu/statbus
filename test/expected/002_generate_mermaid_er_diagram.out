@@ -49,6 +49,7 @@ erDiagram
 		timestamp_with_time_zone last_sign_in_at
 		timestamp_with_time_zone email_confirmed_at
 		timestamp_with_time_zone deleted_at
+		locale locale
 	}
 	db_migration["db.migration"] {
 		integer id
@@ -622,6 +623,8 @@ erDiagram
 		integer region_version_id
 		boolean required_to_be_enabled
 		integer partition_count_target
+		locale default_locale
+		locale[] enabled_locales
 	}
 	stat_definition["stat_definition"] {
 		integer id
