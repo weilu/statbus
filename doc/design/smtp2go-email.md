@@ -122,10 +122,10 @@ SMTP2GO events ─HMAC webhook─► SECURITY DEFINER RPC (low-priv role) ─►
 ---
 
 ## Part C — remaining TODO
-- **M3 — locale source.** statbus has **no** per-user/instance locale today (no
-  `user.locale`, no `settings` locale column, no DB locale enum). Decide: add
-  `user.locale`, an instance default in `settings`, or capture at `user_create`;
-  define a fallback. Blocks populating `email_outbox.locale`.
+- **M3 — locale source. DECIDED** (`doc/design/i18n-rtl.md` §2): populate
+  `email_outbox.locale` from `auth.effective_locale(user)` — the user's
+  `auth.user.locale` if set and enabled, else `public.settings.default_locale`,
+  else `'en'`. The same function feeds the app's auth responses.
 - Template body content per locale + the set-password route/page.
 - Exact SMTP2GO HMAC scheme + the dedicated webhook role definition.
 - SMTP2GO plan rate limits; per-message link/open tracking.
@@ -141,4 +141,5 @@ SMTP2GO events ─HMAC webhook─► SECURITY DEFINER RPC (low-priv role) ─►
 **Review note:** hardened per adversarial review 2026-06-23 — H1–H5 (token
 scope / single-use / DEFINER mint / webhook HMAC / RLS) folded as DECIDED; M1
 (sender separately supervised), M2 (dedicated outbox reset), M4 (idempotency key)
-folded; M3 (locale source) + content remain TODO. Parts A–C above are canonical.
+folded; M3 (locale source) DECIDED 2026-10-05 via `doc/design/i18n-rtl.md`;
+content remains TODO. Parts A–C above are canonical.

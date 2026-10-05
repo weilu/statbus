@@ -1,17 +1,22 @@
 ```sql
-                                                                      Table "public.settings"
-            Column             |  Type   | Collation | Nullable |                   Default                   | Storage | Compression | Stats target | Description 
--------------------------------+---------+-----------+----------+---------------------------------------------+---------+-------------+--------------+-------------
- id                            | integer |           | not null | generated always as identity                | plain   |             |              | 
- activity_category_standard_id | integer |           | not null |                                             | plain   |             |              | 
- country_id                    | integer |           | not null |                                             | plain   |             |              | 
- only_one_setting              | boolean |           |          | generated always as (id IS NOT NULL) stored | plain   |             |              | 
- region_version_id             | integer |           | not null |                                             | plain   |             |              | 
- required_to_be_enabled        | boolean |           |          | generated always as (true) stored           | plain   |             |              | 
- partition_count_target        | integer |           | not null | 256                                         | plain   |             |              | 
+                                                                       Table "public.settings"
+            Column             |   Type   | Collation | Nullable |                   Default                   | Storage  | Compression | Stats target | Description 
+-------------------------------+----------+-----------+----------+---------------------------------------------+----------+-------------+--------------+-------------
+ id                            | integer  |           | not null | generated always as identity                | plain    |             |              | 
+ activity_category_standard_id | integer  |           | not null |                                             | plain    |             |              | 
+ country_id                    | integer  |           | not null |                                             | plain    |             |              | 
+ only_one_setting              | boolean  |           |          | generated always as (id IS NOT NULL) stored | plain    |             |              | 
+ region_version_id             | integer  |           | not null |                                             | plain    |             |              | 
+ required_to_be_enabled        | boolean  |           |          | generated always as (true) stored           | plain    |             |              | 
+ partition_count_target        | integer  |           | not null | 256                                         | plain    |             |              | 
+ default_locale                | locale   |           | not null | 'en'::locale                                | plain    |             |              | 
+ enabled_locales               | locale[] |           | not null | '{en}'::locale[]                            | extended |             |              | 
 Indexes:
     "settings_pkey" PRIMARY KEY, btree (id)
     "settings_only_one_setting_key" UNIQUE CONSTRAINT, btree (only_one_setting)
+Check constraints:
+    "settings_default_locale_enabled" CHECK (default_locale = ANY (enabled_locales))
+    "settings_enabled_locales_is_set" CHECK (locale_array_is_set(enabled_locales))
 Foreign-key constraints:
     "settings_activity_category_standard_enabled_fk" FOREIGN KEY (activity_category_standard_id, required_to_be_enabled) REFERENCES activity_category_standard(id, enabled)
     "settings_activity_category_standard_id_fkey" FOREIGN KEY (activity_category_standard_id) REFERENCES activity_category_standard(id) ON DELETE RESTRICT
@@ -35,6 +40,8 @@ Not-null constraints:
     "settings_country_id_not_null" NOT NULL "country_id"
     "settings_region_version_id_not_null" NOT NULL "region_version_id"
     "settings_report_partition_modulus_not_null" NOT NULL "partition_count_target"
+    "settings_default_locale_not_null" NOT NULL "default_locale"
+    "settings_enabled_locales_not_null" NOT NULL "enabled_locales"
 Triggers:
     trigger_prevent_settings_id_update BEFORE UPDATE OF id ON settings FOR EACH ROW EXECUTE FUNCTION admin.prevent_id_update()
 Access method: heap
