@@ -279,6 +279,11 @@ not code.
 namespace. A fluent speaker fills them into `ar.json`, directly or through a
 spreadsheet round-trip script, and the diff is reviewed in the same PR.
 
+**PR 2 hand-off (from PR 1):** an `auth_status` response with
+`expired_access_token_call_refresh = true` carries the instance default, not the
+user's language. The app must keep its existing locale cookie in that case and
+only overwrite it from an authenticated response.
+
 ### 6.1 Logistics: fork staging, single upstream PR
 
 The upstream master moves fast (856 commits in the 30 days to 2026-10-05), so
