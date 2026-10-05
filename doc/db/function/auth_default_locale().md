@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION auth.default_locale()
  RETURNS locale
  LANGUAGE sql
- STABLE
+ STABLE SECURITY DEFINER
  SET search_path TO 'public', 'auth', 'pg_temp'
 AS $function$
   SELECT COALESCE(

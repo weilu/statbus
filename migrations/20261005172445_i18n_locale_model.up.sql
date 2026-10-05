@@ -31,10 +31,15 @@ ALTER TABLE auth."user" ADD COLUMN locale public.locale NULL;
 
 -- Before getting-started creates the settings row, every shipped language is
 -- offered, so the operator can run the wizard in their own language.
+-- SECURITY DEFINER so the answer never depends on the caller's RLS: a role that
+-- matches no settings policy would otherwise see "no row" and silently get the
+-- fresh-install fallback. The values are not secret (auth_status shows them to
+-- anonymous visitors).
 CREATE FUNCTION auth.enabled_locales()
 RETURNS public.locale[]
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
 SET search_path = public, auth, pg_temp
 AS $enabled_locales$
   SELECT COALESCE(
@@ -43,10 +48,12 @@ AS $enabled_locales$
   );
 $enabled_locales$;
 
+-- SECURITY DEFINER for the same reason as auth.enabled_locales.
 CREATE FUNCTION auth.default_locale()
 RETURNS public.locale
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
 SET search_path = public, auth, pg_temp
 AS $default_locale$
   SELECT COALESCE(

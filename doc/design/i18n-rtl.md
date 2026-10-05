@@ -284,6 +284,15 @@ spreadsheet round-trip script, and the diff is reviewed in the same PR.
 user's language. The app must keep its existing locale cookie in that case and
 only overwrite it from an authenticated response.
 
+**PR 2 hand-off (from PR 1 review):** the settings columns default to `'en'` /
+`'{en}'`, which is right for upgraded installations but resets a fresh install.
+While no settings row exists every shipped language is offered, but the
+getting-started wizard's first save (an upsert of three columns in
+`getting-started-server-actions.ts`) creates the row as English-only, so an
+operator working in Arabic is switched to English mid-wizard. The wizard must
+send `default_locale` and `enabled_locales` with that upsert, using the
+admin control from 3.2.
+
 ### 6.1 Logistics: fork staging, single upstream PR
 
 The upstream master moves fast (856 commits in the 30 days to 2026-10-05), so

@@ -161,6 +161,14 @@ DECLARE
         'public.upgrade_state_log_capture'
     ];
 
+    -- i18n: read the instance language settings so the answer never depends on
+    -- the caller's RLS (a role matching no settings policy would otherwise get
+    -- the fresh-install fallback). Read-only; values are shown to anon anyway.
+    v_locale_funcs TEXT[] := ARRAY[
+        'auth.default_locale',
+        'auth.enabled_locales'
+    ];
+
     -- Combined registry (excluding sql_saga which is matched by schema)
     v_all_registered_funcs TEXT[];
 
@@ -194,7 +202,8 @@ BEGIN
         v_drilldown_funcs ||
         v_graphql_funcs ||
         v_lifecycle_funcs ||
-        v_upgrade_funcs;
+        v_upgrade_funcs ||
+        v_locale_funcs;
 
     -- ========== Generate Documentation ==========
 

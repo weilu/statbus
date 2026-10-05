@@ -132,6 +132,16 @@ SET LOCAL ROLE anon;
 SELECT public.user_locale_set('en');
 \set ON_ERROR_STOP on
 ROLLBACK TO SAVEPOINT f_anon;
+\echo --- a soft-deleted user cannot write through the door
+-- RLS update_own_user does not look at deleted_at, and a deleted user can
+-- still hold an unexpired access token; the door's own filter is the guard.
+SAVEPOINT f_deleted;
+UPDATE auth."user" SET deleted_at = now() WHERE email = 'test.regular@statbus.org';
+CALL test.set_user_from_email('test.regular@statbus.org');
+\set ON_ERROR_STOP off
+SELECT public.user_locale_set('en');
+\set ON_ERROR_STOP on
+ROLLBACK TO SAVEPOINT f_deleted;
 \echo --- a disabled language is refused through the door too
 SAVEPOINT f2;
 UPDATE public.settings SET enabled_locales = '{ar}', default_locale = 'ar';
@@ -163,5 +173,19 @@ SELECT is_authenticated, locale, enabled_locales
 SELECT expired_access_token_call_refresh, locale
   FROM auth.build_auth_response(p_expired_access_token_call_refresh => true);
 ROLLBACK TO SAVEPOINT g;
+
+\echo
+\echo === H: resolvers answer from the real settings row whatever the caller sees ===
+-- A role that may read settings but matches no RLS policy (a future email
+-- sender, say) must not silently get the fresh-install fallback.
+SAVEPOINT h;
+CREATE ROLE i18n_settings_blind NOLOGIN;
+GRANT USAGE ON SCHEMA auth TO i18n_settings_blind;
+GRANT SELECT ON public.settings TO i18n_settings_blind;
+SET LOCAL ROLE i18n_settings_blind;
+SELECT count(*) AS settings_rows_visible FROM public.settings;
+SELECT auth.enabled_locales() AS enabled, auth.default_locale() AS default_locale;
+RESET ROLE;
+ROLLBACK TO SAVEPOINT h;
 
 ROLLBACK;
